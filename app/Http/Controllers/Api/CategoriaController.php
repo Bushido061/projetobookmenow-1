@@ -1,11 +1,11 @@
 <?php
- 
+
 namespace App\Http\Controllers\Api;
- 
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Categoria;
- 
+
 class CategoriaController extends Controller
 {
     public function index()
@@ -15,9 +15,9 @@ class CategoriaController extends Controller
             return response()->json([$categorias, 200]);
         } catch(Exception $e) {
             return request()->json(['Erro' => "Erro ao listar os dados", 500]);
-        }  
+        }   
     }
- 
+
     public function show(string $id)
     {
         try {
@@ -27,6 +27,7 @@ class CategoriaController extends Controller
             return request()->json(['Erro' => "Erro ao listar os dados", 400]);
         }
     }
+
     public function store(Request $request)
     {
 
@@ -35,27 +36,28 @@ class CategoriaController extends Controller
             'descricao' => 'required',
             'imagem' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
         try {
-            
-       
+
+        
+
         $data = [
             'titulo' => $request->titulo,
             'descricao' => $request->descricao,
         ];
-   
+
         if ($request->hasFile('imagem')) {
             $caminhoImagem = $request->file('imagem')->store('categorias', 'public');
             $data['imagem'] = "/storage/".$caminhoImagem; // Salva o caminho da imagem
         }
 
- 
-       $categoria = Categoria::create($data);
-       
-               return  response()->json($categoria,201);
+        $categoria = Categoria::create($data);
 
-    } catch (Exception $e) {
-        return request()->json(['Erro' => "Erro ao listar os dados", 500]);
-   }
+        return response()->json($categoria, 201);
+
+        }catch (Exception $e) {
+            return request()->json(["'ERRO" => "Erro ao listar os dados", 500]);
+        }
     }
 
     public function update(Request $request, string $id)
@@ -65,32 +67,35 @@ class CategoriaController extends Controller
             'descricao' => 'required',
             'imagem' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
         try {
-        $categoria = Categoria::findOrFail($id);
 
-        $data = [
-            'titulo' => $request->titulo,
-            'descricao' => $request->descricao,
-        ];
+            $categoria = Categoria::findOrFail($id);
 
-        if ($request->hasFile('imagem')) {
-            // Apaga a imagem antiga, se existir
-            if ($categoria->imagem) {
-                Storage::disk('public')->delete($categoria->imagem);
+            $data = [
+                'titulo' => $request->titulo,
+                'descricao' => $request->descricao,
+            ];
+
+            if ($request->hasFile('imagem')) {
+                // Apaga a imagem antiga, se existir
+                if ($categoria->imagem) {
+                    Storage::disk('public')->delete($categoria->imagem);
+                }
+
+                $caminhoImagem = $request->file('imagem')->store('categorias', 'public');
+                $data['imagem'] = "/storage/".$caminhoImagem; // Salva o novo caminho da imagem
             }
 
-            $caminhoImagem = $request->file('imagem')->store('categorias', 'public');
-            $data['imagem'] = "/storage/".$caminhoImagem; // Salva o novo caminho da imagem
+            $categoria->update($data);
+
+            return response()->json($categoria, 200);
+
+        }catch (Exception $e) {
+            return request()->json(["'ERRO" => "Erro ao listar os dados", 500]);
         }
-
-        $categoria->update($data);
-
-        return response()->json($categoria, 200);
-        
-    } catch (Exception $e) {
-        return request()->json(['Erro' => "Erro ao listar os dados", 500]);
-   }
     }
+
     public function destroy(string $id)
     {
         try {
@@ -98,10 +103,8 @@ class CategoriaController extends Controller
             $categoria->delete();
             return response()->json(["message" => "Categoria deletada com sucesso", 200]);
         } catch (Exception $e) {
- 
+
             return response()->json(["error" => "Erro ao deletar categoria", 200]);
         }
     }
-
 }
- 
